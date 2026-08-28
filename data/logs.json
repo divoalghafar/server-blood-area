@@ -264,5 +264,19 @@
     "event": "role_added",
     "userId": "1519014744525111447",
     "details": {}
+  },
+  {
+    "id": "d8e60ab4-4283-4a45-a752-3fa520443665",
+    "createdAt": "2026-06-26T06:53:20.739Z",
+    "event": "ticket_created",
+    "userId": "466199828620247061",
+    "details": {}
+  },
+  {
+    "id": "ee95c7c0-2c67-404c-a804-da28ba9af4bd",
+    "createdAt": "2026-06-26T06:54:02.896Z",
+    "event": "ticket_closed",
+    "userId": "466199828620247061",
+    "details": {}
   }
 ]

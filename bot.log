@@ -1,0 +1,73 @@
+
+> divo-discord-project@1.0.0 start
+> node src/index.js
+
+Bot Online sebagai dipo-bot#5703
+[gateway] [VOICE] received voice state update: {"member":{"user":{"username":"dipo-bot","public_flags":0,"primary_guild":null,"id":"1517577050171379813","global_name":null,"display_name_styles":null,"display_name":null,"discriminator":"5703","collectibles":null,"bot":true,"avatar_decoration_data":null,"avatar":null},"roles":["1517578381472829523"],"premium_since":null,"pending":false,"nick":null,"mute":false,"joined_at":"2026-06-19T17:14:41.481000+00:00","flags":0,"deaf":false,"communication_disabled_until":null,"banner":null,"avatar":null},"user_id":"1517577050171379813","suppress":false,"session_id":"efc5b47c9017ddce6bf3bf59c2ae38f1","self_video":false,"self_mute":false,"self_deaf":false,"request_to_speak_timestamp":null,"mute":false,"guild_id":"1406995936739197048","deaf":false,"connected_at":1787889340,"channel_id":null}
+[gateway] voiceStateUpdate bot -> guild=1406995936739197048 channel=null serverMute=false selfMute=false suppress=false
+DiscordAPIError[10062]: Unknown interaction
+    at handleErrors (/Users/divoalghafar/Documents/project-website/divo-discord-project/node_modules/@discordjs/rest/dist/index.js:762:13)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async BurstHandler.runRequest (/Users/divoalghafar/Documents/project-website/divo-discord-project/node_modules/@discordjs/rest/dist/index.js:866:23)
+    at async _REST.request (/Users/divoalghafar/Documents/project-website/divo-discord-project/node_modules/@discordjs/rest/dist/index.js:1307:22)
+    at async ChatInputCommandInteraction.deferReply (/Users/divoalghafar/Documents/project-website/divo-discord-project/node_modules/discord.js/src/structures/interfaces/InteractionResponses.js:122:22)
+    at async Object.execute (/Users/divoalghafar/Documents/project-website/divo-discord-project/src/commands/join.js:10:5)
+    at async Object.execute (/Users/divoalghafar/Documents/project-website/divo-discord-project/src/events/interactionCreate.js:18:9) {
+  requestBody: { files: undefined, json: { type: 5, data: [Object] } },
+  rawError: { message: 'Unknown interaction', code: 10062 },
+  code: 10062,
+  status: 404,
+  method: 'POST',
+  url: 'https://discord.com/api/v10/interactions/1542746075704721540/aW50ZXJhY3Rpb246MTU0Mjc0NjA3NTcwNDcyMTU0MDpsS045c3NhREQ4cmVqNUlzYmNkUllkMDJCVzBwYlhEQlpPSDE5VVJWRDYzYTR1VDdWd2hRY284RHIzRkRtQ0JKenlUWjRCU2JQd1VIR29YbzdmRDdxS1MzTlFFZDJVR21tUGZZcGh3WkZlaUs1OHhpSjBTSUpIT1dGYW9ubzk2SQ/callback?with_response=false'
+}
+(node:52948) Warning: Supplying "ephemeral" for interaction response options is deprecated. Utilize flags instead.
+(Use `node --trace-warnings ...` to show where the warning was created)
+node:events:502
+      throw er; // Unhandled 'error' event
+      ^
+
+DiscordAPIError[40060]: Interaction has already been acknowledged.
+    at handleErrors (/Users/divoalghafar/Documents/project-website/divo-discord-project/node_modules/@discordjs/rest/dist/index.js:762:13)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async BurstHandler.runRequest (/Users/divoalghafar/Documents/project-website/divo-discord-project/node_modules/@discordjs/rest/dist/index.js:866:23)
+    at async _REST.request (/Users/divoalghafar/Documents/project-website/divo-discord-project/node_modules/@discordjs/rest/dist/index.js:1307:22)
+    at async ChatInputCommandInteraction.reply (/Users/divoalghafar/Documents/project-website/divo-discord-project/node_modules/discord.js/src/structures/interfaces/InteractionResponses.js:193:22)
+    at async Object.execute (/Users/divoalghafar/Documents/project-website/divo-discord-project/src/events/interactionCreate.js:30:11)
+Emitted 'error' event on Client instance at:
+    at emitUnhandledRejectionOrErr (node:events:407:10)
+    at process.processTicksAndRejections (node:internal/process/task_queues:92:21) {
+  requestBody: {
+    files: [],
+    json: {
+      type: 4,
+      data: {
+        content: 'Terjadi kesalahan saat menjalankan command.',
+        tts: false,
+        nonce: undefined,
+        enforce_nonce: false,
+        embeds: undefined,
+        components: undefined,
+        username: undefined,
+        avatar_url: undefined,
+        allowed_mentions: undefined,
+        flags: 64,
+        message_reference: undefined,
+        attachments: undefined,
+        sticker_ids: undefined,
+        thread_name: undefined,
+        applied_tags: undefined,
+        poll: undefined
+      }
+    }
+  },
+  rawError: {
+    message: 'Interaction has already been acknowledged.',
+    code: 40060
+  },
+  code: 40060,
+  status: 400,
+  method: 'POST',
+  url: 'https://discord.com/api/v10/interactions/1542746075704721540/aW50ZXJhY3Rpb246MTU0Mjc0NjA3NTcwNDcyMTU0MDpsS045c3NhREQ4cmVqNUlzYmNkUllkMDJCVzBwYlhEQlpPSDE5VVJWRDYzYTR1VDdWd2hRY284RHIzRkRtQ0JKenlUWjRCU2JQd1VIR29YbzdmRDdxS1MzTlFFZDJVR21tUGZZcGh3WkZlaUs1OHhpSjBTSUpIT1dGYW9ubzk2SQ/callback?with_response=false'
+}
+
+Node.js v22.12.0
