@@ -278,5 +278,19 @@
     "event": "ticket_closed",
     "userId": "466199828620247061",
     "details": {}
+  },
+  {
+    "id": "5b35ea00-e5cd-4643-b98d-fadcffa3b3ef",
+    "createdAt": "2026-08-31T12:32:46.645Z",
+    "event": "announcement_created",
+    "userId": "466199828620247061",
+    "details": {}
+  },
+  {
+    "id": "687a233d-948a-40d9-b038-a0496c6715c1",
+    "createdAt": "2026-08-31T12:34:38.393Z",
+    "event": "announcement_created",
+    "userId": "466199828620247061",
+    "details": {}
   }
 ]
