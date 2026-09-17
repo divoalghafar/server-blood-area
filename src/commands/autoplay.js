@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { getOrCreateQueue, setAutoplay } = require('../services/musicService');
+const { setAutoplay, toggleAutoplay } = require('../services/musicService');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -8,10 +8,13 @@ module.exports = {
     .addBooleanOption((option) => option
       .setName('enabled')
       .setDescription('True untuk aktif, false untuk nonaktif.')
-      .setRequired(true)),
+      .setRequired(false)),
   async execute(interaction) {
-    const enabled = interaction.options.getBoolean('enabled', true);
-    setAutoplay(interaction.guildId, enabled);
-    await interaction.reply(`Autoplay ${enabled ? 'diaktifkan' : 'dinonaktifkan'}.`);
+    const enabled = interaction.options.getBoolean('enabled');
+    const result = enabled === null
+      ? toggleAutoplay(interaction.guildId)
+      : setAutoplay(interaction.guildId, enabled);
+
+    await interaction.reply(result.message);
   }
 };

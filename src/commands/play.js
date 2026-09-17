@@ -84,6 +84,7 @@ function formatSource(sourceType) {
   if (sourceType === 'track') return 'Spotify Track';
   if (sourceType === 'album') return 'Spotify Album';
   if (sourceType === 'playlist') return 'Spotify Playlist';
+  if (sourceType === 'artist') return 'Spotify Artist';
   if (sourceType === 'youtube-url') return 'YouTube URL';
   return 'YouTube Search';
 }

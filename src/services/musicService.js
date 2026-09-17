@@ -419,7 +419,13 @@ function getPythonExecutablePath() {
 }
 
 async function searchYouTubeTrack(query) {
-  const results = await play.search(query, { limit: 1 });
+  let results;
+
+  try {
+    results = await play.search(query, { limit: 1 });
+  } catch (error) {
+    throw new Error(`Pencarian YouTube gagal untuk "${query}": ${error.message}`);
+  }
 
   if (!results || results.length === 0) {
     throw new Error(`Tidak ada hasil YouTube untuk query: ${query}`);
@@ -443,14 +449,23 @@ function extractYouTubeResourceInfo(input) {
     return null;
   }
 
-  const trimmed = input.trim();
-
-  if (play.yt_validate(trimmed) !== 'video') {
-    return null;
-  }
+  const trimmed = input.trim().replace(/\\&/g, '&');
 
   try {
     const url = new URL(trimmed);
+    const hostname = url.hostname.toLowerCase();
+    const isYouTubeHost = [
+      'youtube.com',
+      'www.youtube.com',
+      'music.youtube.com',
+      'm.youtube.com',
+      'youtu.be'
+    ].includes(hostname);
+
+    if (!isYouTubeHost || (play.yt_validate(trimmed) !== 'video' && hostname !== 'music.youtube.com')) {
+      return null;
+    }
+
     const videoId = url.searchParams.get('v');
 
     if (videoId) {
@@ -602,7 +617,10 @@ function disconnectMusic(guildId) {
 function setAutoplay(guildId, enabled) {
   const queue = getOrCreateQueue(guildId);
   queue.autoplay = enabled;
-  return queue.autoplay;
+  return {
+    ok: true,
+    message: `🔁 Autoplay ${enabled ? 'diaktifkan' : 'dinonaktifkan'}`
+  };
 }
 
 function setLoopMode(guildId, mode) {
@@ -845,6 +863,11 @@ function setShuffle(guildId, enabled) {
   return { ok: true, message: enabled ? '🔀 Shuffle mode diaktifkan' : '🔀 Shuffle mode dimatikan' };
 }
 
+function toggleAutoplay(guildId) {
+  const queue = getOrCreateQueue(guildId);
+  return setAutoplay(guildId, !queue.autoplay);
+}
+
 function toggleShuffle(guildId) {
   const queue = getOrCreateQueue(guildId);
   queue.shuffleMode = !queue.shuffleMode;
@@ -872,6 +895,7 @@ module.exports = {
   resolveYouTubeAudioUrl,
   searchYouTubeTrack,
   setAutoplay,
+  toggleAutoplay,
   setLoopMode,
   setShuffle,
   skipTrack,

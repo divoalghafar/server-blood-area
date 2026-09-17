@@ -41,7 +41,7 @@ function extractSpotifyResourceInfo(input) {
 
   const trimmed = input.trim();
 
-  const uriMatch = trimmed.match(/^spotify:(track|album|playlist):([a-zA-Z0-9]+)$/);
+  const uriMatch = trimmed.match(/^spotify:(track|album|playlist|artist):([a-zA-Z0-9]+)$/);
   if (uriMatch) {
     return {
       type: uriMatch[1],
@@ -50,7 +50,7 @@ function extractSpotifyResourceInfo(input) {
     };
   }
 
-  const urlMatch = trimmed.match(/open\.spotify\.com\/(track|album|playlist)\/([a-zA-Z0-9]+)/);
+  const urlMatch = trimmed.match(/open\.spotify\.com\/(track|album|playlist|artist)\/([a-zA-Z0-9]+)/);
   if (urlMatch) {
     return {
       type: urlMatch[1],
@@ -73,6 +73,10 @@ function buildSpotifyResourceUrl(type, id) {
 
   if (type === 'playlist') {
     return buildSpotifyPlaylistUrl(id);
+  }
+
+  if (type === 'artist') {
+    return `https://open.spotify.com/artist/${id}`;
   }
 
   return null;
@@ -214,38 +218,79 @@ function readSpotifyMeta(html, key) {
 function extractSpotifyTrackUrlsFromHtml(html) {
   const seen = new Set();
   const urls = [];
-  const pattern = /https:\/\/open\.spotify\.com\/track\/([a-zA-Z0-9]+)/g;
+  const patterns = [
+    /https?:\\?\/\\?\/open\.spotify\.com\\?\/track\\?\/([a-zA-Z0-9]+)/g,
+    /spotify:track:([a-zA-Z0-9]+)/g,
+    /["']type["']\s*:\s*["']track["'][\s\S]{0,200}?["']id["']\s*:\s*["']([a-zA-Z0-9]+)["']/g,
+    /["']id["']\s*:\s*["']([a-zA-Z0-9]+)["'][\s\S]{0,200}?["']type["']\s*:\s*["']track["']/g
+  ];
 
-  for (const match of html.matchAll(pattern)) {
-    const trackId = match[1];
-    if (seen.has(trackId)) continue;
+  for (const pattern of patterns) {
+    for (const match of html.matchAll(pattern)) {
+      const trackId = match[1];
+      if (seen.has(trackId)) continue;
 
-    seen.add(trackId);
-    urls.push(buildSpotifyTrackUrl(trackId));
+      seen.add(trackId);
+      urls.push(buildSpotifyTrackUrl(trackId));
+    }
   }
 
   return urls;
 }
 
+function extractSpotifyTrackUrlsFromValue(value) {
+  const trackIds = new Set();
+
+  function visit(node) {
+    if (!node || typeof node !== 'object') return;
+
+    if (Array.isArray(node)) {
+      node.forEach(visit);
+      return;
+    }
+
+    if (typeof node.uri === 'string' && node.uri.startsWith('spotify:track:')) {
+      trackIds.add(node.uri.split(':').pop());
+    }
+
+    if (node.type === 'track' && typeof node.id === 'string') {
+      trackIds.add(node.id);
+    }
+
+    if (node.external_urls?.spotify) {
+      const match = node.external_urls.spotify.match(/\/track\/([a-zA-Z0-9]+)/);
+      if (match) trackIds.add(match[1]);
+    }
+
+    Object.values(node).forEach(visit);
+  }
+
+  visit(value);
+  return [...trackIds].map(buildSpotifyTrackUrl);
+}
+
 async function fetchSpotifyCollectionMetadata(collectionUrl) {
   const resource = extractSpotifyResourceInfo(collectionUrl);
 
-  if (!resource || (resource.type !== 'album' && resource.type !== 'playlist')) {
-    throw new Error('Input bukan Spotify album atau playlist yang valid.');
+  if (!resource || !['album', 'playlist', 'artist'].includes(resource.type)) {
+    throw new Error('Input bukan Spotify artist, album, atau playlist yang valid.');
   }
 
-  const embedUrl = buildSpotifyResourceEmbedUrl(resource.type, resource.id);
-  const html = await fetchSpotifyPageHtml(embedUrl);
+  const pageUrl = resource.type === 'artist'
+    ? resource.url
+    : buildSpotifyResourceEmbedUrl(resource.type, resource.id);
+  const html = await fetchSpotifyPageHtml(pageUrl);
 
   const nextDataMatch = html.match(
     /<script id="__NEXT_DATA__" type="application\/json">([\s\S]*?)<\/script>/i
   );
 
   let entity = null;
+  let nextData = null;
 
   if (nextDataMatch) {
     try {
-      const nextData = JSON.parse(nextDataMatch[1]);
+      nextData = JSON.parse(nextDataMatch[1]);
       entity = nextData?.props?.pageProps?.state?.data?.entity || null;
     } catch (error) {
       entity = null;
@@ -267,9 +312,13 @@ async function fetchSpotifyCollectionMetadata(collectionUrl) {
     .filter((uri) => typeof uri === 'string' && uri.startsWith('spotify:track:'))
     .map((uri) => buildSpotifyTrackUrl(uri.split(':').pop()));
 
-  const fallbackTrackUrls = trackUrls.length > 0
-    ? trackUrls
-    : extractSpotifyTrackUrlsFromHtml(html);
+  const jsonTrackUrls = extractSpotifyTrackUrlsFromValue(nextData);
+  const htmlTrackUrls = extractSpotifyTrackUrlsFromHtml(html);
+  const fallbackTrackUrls = [...new Set([
+    ...trackUrls,
+    ...jsonTrackUrls,
+    ...htmlTrackUrls
+  ])];
 
   return {
     title,
@@ -317,14 +366,15 @@ async function resolveSpotifyTrack(input) {
 async function resolveSpotifyCollection(input) {
   const resource = extractSpotifyResourceInfo(input);
 
-  if (!resource || (resource.type !== 'album' && resource.type !== 'playlist')) {
-    throw new Error('Input bukan Spotify album atau playlist yang valid.');
+  if (!resource || !['artist', 'album', 'playlist'].includes(resource.type)) {
+    throw new Error('Input bukan Spotify artist, album, atau playlist yang valid.');
   }
 
   const collection = await fetchSpotifyCollectionMetadata(resource.url);
 
   if (collection.trackUrls.length === 0) {
-    throw new Error('Tidak ada track yang ditemukan pada album/playlist Spotify ini.');
+    const resourceLabel = resource.type === 'artist' ? 'artist' : `${resource.type} Spotify`;
+    throw new Error(`Tidak ada track yang ditemukan pada ${resourceLabel} ini.`);
   }
 
   return {
@@ -363,7 +413,42 @@ async function resolveSpotifyInput(input) {
     };
   }
 
+  if (resource.type === 'artist') {
+    let artistName = null;
+    let thumbnailUrl = null;
+
+    try {
+      const artistInfo = await fetchSpotifyOEmbed(resource.url);
+      artistName = artistInfo.title || null;
+      thumbnailUrl = artistInfo.thumbnail_url || null;
+    } catch (error) {
+      const html = await fetchSpotifyPageHtml(resource.url);
+      artistName = readSpotifyMeta(html, 'og:title');
+      thumbnailUrl = readSpotifyMeta(html, 'og:image');
+    }
+
+    artistName = (artistName || `artist Spotify ${resource.id}`).replace(/\s*\|\s*Spotify\s*$/i, '');
+
+    return {
+      type: 'artist',
+      title: artistName,
+      artist: artistName,
+      thumbnailUrl,
+      trackUrls: [],
+      items: [
+        {
+          kind: 'youtube-search',
+          query: `${artistName} official audio`
+        }
+      ]
+    };
+  }
+
   const collection = await resolveSpotifyCollection(input);
+
+  if (collection.trackUrls.length === 0) {
+    throw new Error('Track dari Spotify artist ini tidak dapat dibaca. Coba gunakan link album atau playlist Spotify.');
+  }
 
   return {
     type: resource.type,
@@ -386,6 +471,7 @@ module.exports = {
   extractSpotifyResourceInfo,
   extractSpotifyTrackId,
   extractSpotifyTrackUrlsFromHtml,
+  extractSpotifyTrackUrlsFromValue,
   fetchSpotifyOEmbed,
   fetchSpotifyCollectionMetadata,
   fetchSpotifyEmbedMetadata,

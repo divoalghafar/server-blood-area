@@ -1,4 +1,11 @@
 const PREFIX = 'gm1!';
+const ALLOWED_ROLE_IDS = new Set([
+  '1462085261893701642',
+  '1386874017105051759',
+  '1376416212724088932',
+  '1367316783832502282',
+  '1488646728226967563',
+]);
 
 function initMessageCommands(client) {
   client.on('messageCreate', async (message) => {
@@ -11,6 +18,15 @@ function initMessageCommands(client) {
     const command = client.commands.get(name?.toLowerCase());
 
     if (!command) return;
+
+    const canUseMusicCommands = message.member?.roles.cache.some((role) =>
+      ALLOWED_ROLE_IDS.has(role.id)
+    );
+
+    if (!canUseMusicCommands) {
+      await message.reply('Kamu tidak memiliki role yang diperlukan untuk menggunakan command music.');
+      return;
+    }
 
     const interaction = createMessageContext(message, args);
 
@@ -68,4 +84,4 @@ function normalizePayload(payload) {
   return typeof payload === 'string' ? { content: payload } : payload;
 }
 
-module.exports = { PREFIX, initMessageCommands };
+module.exports = { ALLOWED_ROLE_IDS, PREFIX, initMessageCommands };
