@@ -90,7 +90,7 @@ async function enqueueMusic(interaction, input) {
 
   const memberVoiceChannel = interaction.member?.voice?.channel;
   if (!memberVoiceChannel) {
-    throw new Error('Kamu harus join voice channel dulu sebelum memakai /play.');
+    throw new Error('Kamu harus join voice channel dulu sebelum memakai gm1!play.');
   }
 
   const queue = getOrCreateQueue(interaction.guild.id);
@@ -125,7 +125,7 @@ async function joinMusic(interaction) {
 
   const memberVoiceChannel = interaction.member?.voice?.channel;
   if (!memberVoiceChannel) {
-    throw new Error('Kamu harus join voice channel dulu sebelum memakai /join.');
+    throw new Error('Kamu harus join voice channel dulu sebelum memakai gm1!join.');
   }
 
   const queue = getOrCreateQueue(interaction.guild.id);

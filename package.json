@@ -8,8 +8,7 @@
     "node": ">=22.12.0"
   },
   "scripts": {
-    "start": "node src/index.js",
-    "register:commands": "node register-commands.js"
+    "start": "node src/index.js"
   },
   "keywords": [
     "discord",
